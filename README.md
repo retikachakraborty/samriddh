@@ -1,4 +1,4 @@
-# ✦ SAMRIDDH — Executive Business Intelligence & Analytics
+#  SAMRIDDH — Executive Business Intelligence & Analytics
 
 **Samriddh** is an enterprise-grade executive analytics platform powering retail velocity metrics, RFM customer segmentation, spatial Voice-of-Customer sentiment synthesis, and autonomous **SAM AI Intelligence**.
 
@@ -6,7 +6,7 @@ The platform maintains strict statistical integrity by keeping **UCI Retail tran
 
 ---
 
-## 🏗️ Architecture & Tech Stack
+##  Architecture & Tech Stack
 
 ```
                                ┌───────────────────────────┐
@@ -35,7 +35,7 @@ The platform maintains strict statistical integrity by keeping **UCI Retail tran
 
 ---
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 Samriddh/
@@ -72,7 +72,7 @@ Samriddh/
 
 ---
 
-## 🚀 Quick Start Guide
+##  Quick Start Guide
 
 ### Option 1: Unified Single-Command Startup (Recommended)
 
@@ -119,7 +119,7 @@ Open `http://localhost:5173` in your browser.
 
 ---
 
-## 🔑 Authentication & Account Roles
+##  Authentication & Account Roles
 
 The platform supports two account profiles:
 
@@ -130,7 +130,7 @@ The platform supports two account profiles:
 
 ---
 
-## 📊 Data Pipeline & Integrity Audit
+##  Data Pipeline & Integrity Audit
 
 Run the idempotent ETL pipeline anytime:
 
@@ -156,7 +156,7 @@ python3 scripts/data_pipeline.py
 
 ---
 
-## 🛠️ Data Import to Supabase
+##  Data Import to Supabase
 
 To re-seed or sync local processed data with remote Supabase tables:
 
@@ -166,7 +166,7 @@ python3 scripts/import_to_supabase.py
 
 ---
 
-## 📜 API Documentation
+##  API Documentation
 
 When the backend is running, interactive API docs are available at:
 * **Swagger UI**: [http://127.0.0.1:8000/docs](http://127.0.0.1:8000/docs)
