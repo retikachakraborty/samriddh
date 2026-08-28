@@ -1,21 +1,20 @@
 """Idempotent Phase 1 ETL for Samriddh.
 
-Raw files are read only. Every output is recreated under data/processed, data/sample,
-and data/quality. The implementation intentionally uses the Python standard library
+Raw files are read only. Every output is recreated under data/processed and
+data/quality. The implementation intentionally uses the Python standard library
 so the pipeline can run in a clean environment.
 """
 from __future__ import annotations
 
 import csv, json, math, random, shutil, statistics, zipfile
 from collections import Counter, defaultdict
-from datetime import datetime
+from datetime import datetime, timedelta
 from pathlib import Path
 from xml.etree import ElementTree as ET
 
 ROOT = Path(__file__).resolve().parents[1]
 RAW = ROOT / "data" / "raw"
 PROCESSED = ROOT / "data" / "processed"
-SAMPLE = ROOT / "data" / "sample"
 QUALITY = ROOT / "data" / "quality"
 
 def read_csv(path):
@@ -62,7 +61,23 @@ def parse_excel():
     rows=xlsx_rows(RAW/"transactions"/"Online Retail.xlsx")
     header=[str(x).strip() for x in rows[0]]
     records=[dict(zip(header, r+([""]*(len(header)-len(r))))) for r in rows[1:]]
+    # The UCI workbook stores InvoiceDate as an Excel serial date.  Normalise it
+    # here so all downstream time calculations use one explicit representation.
+    for record in records:
+        parsed=parse_date(record.get("InvoiceDate", ""))
+        if parsed:
+            record["InvoiceDate"]=parsed.strftime("%m/%d/%Y %H:%M")
     return records, header
+
+def parse_date(value):
+    try:
+        return datetime(1899, 12, 30) + timedelta(days=float(value))
+    except (ValueError, TypeError):
+        pass
+    for pattern in ("%m/%d/%Y %H:%M", "%Y-%m-%d %H:%M:%S"):
+        try: return datetime.strptime(value, pattern)
+        except ValueError: pass
+    return None
 
 def transaction_etl():
     raw, original_fields=parse_excel()
@@ -81,13 +96,13 @@ def transaction_etl():
         desc=(r.get("Description") or "").strip(); stock=r.get("StockCode","").strip()
         if not desc:
             choices=desc_by_stock.get(stock, Counter())
-            if choices:
+            # Only use a StockCode mapping when it identifies one description.
+            # Choosing the most common label for an ambiguous code would invent
+            # a product description rather than safely recovering one.
+            if choices and len(choices) == 1:
                 desc=choices.most_common(1)[0][0]; recovered+=1
             else: unrecoverable+=1
-        try: dt=datetime.strptime(r.get("InvoiceDate",""), "%m/%d/%Y %H:%M")
-        except ValueError:
-            try: dt=datetime.strptime(r.get("InvoiceDate",""), "%Y-%m-%d %H:%M:%S")
-            except ValueError: dt=None
+        dt=parse_date(r.get("InvoiceDate", ""))
         is_adj=price<0 or stock.upper()=="B" or "bad debt" in desc.lower()
         is_cancel=invoice.upper().startswith("C")
         is_return=q<0 and not is_cancel and not is_adj
@@ -96,7 +111,7 @@ def transaction_etl():
         elif is_return: typ="RETURN"
         elif q>0: typ="SALE"
         else: typ="OTHER"
-        d=dict(r); d.update({"Description":desc or "Unknown description", "CustomerID": r.get("CustomerID") or "",
+        d=dict(r); d.update({"Description":desc, "CustomerID": r.get("CustomerID") or "",
             "line_value":round(q*price,4), "absolute_line_value":round(abs(q*price),4), "transaction_type":typ,
             "is_return":int(is_return), "is_cancellation":int(is_cancel), "is_adjustment":int(is_adj),
             "is_zero_price":int(price==0), "is_extreme_quantity":int(abs(q)>=1000), "customer_available":int(bool(r.get("CustomerID"))),
@@ -105,18 +120,21 @@ def transaction_etl():
         out.append(d)
     fields=original_fields+ ["line_value","absolute_line_value","transaction_type","is_return","is_cancellation","is_adjustment","is_zero_price","is_extreme_quantity","customer_available","year","month","day","day_of_week","quarter"]
     write_csv(PROCESSED/"transactions"/"transactions_cleaned.csv",out,fields)
+    write_csv(PROCESSED/"transactions"/"customer_transactions.csv",[r for r in out if r["customer_available"] and r["transaction_type"] != "ADJUSTMENT"],fields)
+    write_csv(PROCESSED/"transactions"/"returns_cancellations.csv",[r for r in out if r["is_return"] or r["is_cancellation"]],fields)
     # Reusable customer metrics: positive sales only, excluding adjustments.
     by=defaultdict(list)
     for r in out:
-        if r["customer_available"] and r["transaction_type"] in ("SALE","RETURN"):
+        if r["customer_available"] and r["transaction_type"] in ("SALE","RETURN", "CANCELLATION"):
             by[r["CustomerID"]].append(r)
     now=max((datetime.strptime(r["InvoiceDate"], "%m/%d/%Y %H:%M") for r in out if r["InvoiceDate"]), default=datetime.now())
     customers=[]
     for cid, rs in by.items():
         invoices={r["InvoiceNo"] for r in rs}; spend=sum(num(r["line_value"]) for r in rs); positive=sum(1 for r in invoices if not str(r).startswith("C"))
-        first=min(r["InvoiceDate"] for r in rs); last=max(r["InvoiceDate"] for r in rs)
-        rec=(now-datetime.strptime(last,"%m/%d/%Y %H:%M")).days
-        customers.append({"customer_id":cid,"country":Counter(r["Country"] for r in rs).most_common(1)[0][0],"total_spend":round(spend,2),"order_count":positive,"units_purchased":sum(num(r["Quantity"]) for r in rs if num(r["Quantity"])>0),"average_order_value":round(spend/positive,2) if positive else 0,"first_purchase":first,"last_purchase":last,"recency":rec,"frequency":positive,"monetary_value":round(spend,2)})
+        dates=[datetime.strptime(r["InvoiceDate"], "%m/%d/%Y %H:%M") for r in rs]
+        first=min(dates); last=max(dates)
+        rec=(now-last).days
+        customers.append({"customer_id":cid,"country":Counter(r["Country"] for r in rs).most_common(1)[0][0],"total_spend":round(spend,2),"order_count":positive,"units_purchased":sum(num(r["Quantity"]) for r in rs if num(r["Quantity"])>0),"average_order_value":round(spend/positive,2) if positive else 0,"first_purchase":first.strftime("%Y-%m-%d %H:%M"),"last_purchase":last.strftime("%Y-%m-%d %H:%M"),"recency":rec,"frequency":positive,"monetary_value":round(spend,2)})
     # Quintile-like RFM scoring, deterministic and explainable.
     def score(value, values, reverse=False):
         rank=sum(v<=value for v in values)/max(len(values),1); s=min(5,max(1,math.ceil(rank*5)))
@@ -132,18 +150,23 @@ def transaction_etl():
         c.update({"r_score":rs,"f_score":fs,"m_score":ms,"rfm_score":f"{rs}{fs}{ms}","rfm_segment":seg,"retention_action":"Personal outreach + tailored offer" if seg=="At-risk high value" else ("Win-back campaign" if seg=="Inactive" else "Nurture and recommend next purchase")})
     write_csv(PROCESSED/"transactions"/"customers.csv",customers)
     product_metrics(out); country_metrics(out)
-    quality={"source":"UCI Online Retail","original_rows":len(raw),"exact_duplicate_rows":len(raw)-len(dedup),"processed_rows":len(out),"missing_description_recovered":recovered,"missing_description_unrecoverable":unrecoverable,"missing_customer_rows":sum(not r["CustomerID"] for r in out),"classification_counts":dict(Counter(r["transaction_type"] for r in out)),"extreme_quantity_rows":sum(int(r["is_extreme_quantity"]) for r in out),"zero_price_rows":sum(int(r["is_zero_price"]) for r in out),"negative_unit_price_rows":sum(num(r["UnitPrice"])<0 for r in out)}
+    classification_counts=dict(Counter(r["transaction_type"] for r in out))
+    quality={"source":"UCI Online Retail","input_rows":len(raw),"output_rows":len(out),"rows_removed":{"exact_duplicate_rows":len(raw)-len(dedup)},"missing_descriptions":{"recovered_from_unambiguous_stock_code":recovered,"unrecoverable":unrecoverable},"rows_used_for_customer_analytics":sum(r["customer_available"] and r["transaction_type"] != "ADJUSTMENT" for r in out),"sales_returns_cancellation_treatment":{"sales":classification_counts.get("SALE",0),"returns":classification_counts.get("RETURN",0),"cancellations":classification_counts.get("CANCELLATION",0),"excluded_adjustments":classification_counts.get("ADJUSTMENT",0)},"missing_customer_rows_retained_for_general_analytics":sum(not r["CustomerID"] for r in out),"extreme_quantity_rows":sum(int(r["is_extreme_quantity"]) for r in out),"zero_price_rows":sum(int(r["is_zero_price"]) for r in out),"negative_unit_price_rows":sum(num(r["UnitPrice"])<0 for r in out)}
     return quality
 
 def product_metrics(rows):
     by=defaultdict(list)
-    for r in rows: by[(r["StockCode"],r["Description"])] .append(r)
+    for r in rows:
+        by[r["StockCode"]].append(r)
     out=[]
-    for (code,desc),rs in by.items():
-        sales=sum(num(r["line_value"]) for r in rs if r["transaction_type"]=="SALE"); qty=sum(num(r["Quantity"]) for r in rs if r["transaction_type"]=="SALE"); ret=sum(abs(num(r["Quantity"])) for r in rs if r["is_return"] or r["is_cancellation"])
+    for code,rs in by.items():
+        desc=Counter(r["Description"] for r in rs if r["Description"]).most_common(1)
+        desc=desc[0][0] if desc else ""
+        sales=sum(num(r["line_value"]) for r in rs if r["transaction_type"]=="SALE")
+        qty=sum(num(r["Quantity"]) for r in rs if r["transaction_type"]=="SALE")
+        ret=sum(abs(num(r["Quantity"])) for r in rs if r["is_return"] or r["is_cancellation"])
         out.append({"stock_code":code,"description":desc,"revenue":round(sales,2),"quantity_sold":int(qty),"order_frequency":len({r["InvoiceNo"] for r in rs}),"return_quantity":int(ret),"return_rate":round(ret/max(qty,1),4),"country":Counter(r["Country"] for r in rs).most_common(1)[0][0]})
     write_csv(PROCESSED/"transactions"/"product_metrics.csv",sorted(out,key=lambda x:x["revenue"],reverse=True))
-
 def country_metrics(rows):
     by=defaultdict(list)
     for r in rows: by[r["Country"]].append(r)
@@ -172,11 +195,8 @@ def review_etl():
     return quality
 
 def main():
-    for d in (PROCESSED/"transactions",PROCESSED/"reviews",SAMPLE,QUALITY): d.mkdir(parents=True,exist_ok=True)
+    for d in (PROCESSED/"transactions",PROCESSED/"reviews",QUALITY): d.mkdir(parents=True,exist_ok=True)
     tq=transaction_etl(); rq=review_etl()
-    # Small deterministic samples for UI development.
-    for src, name, n in [(PROCESSED/"transactions"/"transactions_cleaned.csv","transactions_sample.csv",1000),(PROCESSED/"transactions"/"customers.csv","customers_sample.csv",500),(PROCESSED/"reviews"/"reviews_enriched.csv","reviews_sample.csv",1000)]:
-        rows=read_csv(src); write_csv(SAMPLE/name, rows[:n])
     report={"generated_at":datetime.utcnow().isoformat()+"Z","transactions":tq,"reviews":rq}
     (QUALITY/"data_quality.json").write_text(json.dumps(report,indent=2),encoding="utf-8")
     print(json.dumps(report,indent=2))

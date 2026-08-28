@@ -1,0 +1,1 @@
+"""Samriddh backend application."""

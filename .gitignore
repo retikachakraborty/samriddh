@@ -1,0 +1,32 @@
+# Environment files & Secrets
+.env
+.env.local
+.env.*.local
+
+# Python Virtual Environment
+.venv/
+venv/
+ENV/
+env/
+
+# Python Cache & Artifacts
+__pycache__/
+backend/app/__pycache__/
+backend/app/*/__pycache__/
+scripts/__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Node dependencies & build outputs
+node_modules/
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+
+# System / IDE files
+.DS_Store
+.vscode/
+.idea/
+*.log

@@ -1,0 +1,39 @@
+{
+  "generated_at": "2026-08-27T13:41:25.126160Z",
+  "transactions": {
+    "source": "UCI Online Retail",
+    "input_rows": 541909,
+    "output_rows": 536641,
+    "rows_removed": {
+      "exact_duplicate_rows": 5268
+    },
+    "missing_descriptions": {
+      "recovered_from_unambiguous_stock_code": 1033,
+      "unrecoverable": 421
+    },
+    "rows_used_for_customer_analytics": 401604,
+    "sales_returns_cancellation_treatment": {
+      "sales": 526051,
+      "returns": 1336,
+      "cancellations": 9251,
+      "excluded_adjustments": 3
+    },
+    "missing_customer_rows_retained_for_general_analytics": 135037,
+    "extreme_quantity_rows": 186,
+    "zero_price_rows": 2510,
+    "negative_unit_price_rows": 2
+  },
+  "reviews": {
+    "source": "E-commerce Customer Reviews",
+    "reviews": 100000,
+    "products": 5000,
+    "sellers": 500,
+    "sentiment_records": 100000,
+    "trend_periods": 60,
+    "relationship_missing": {
+      "review_product": 0,
+      "review_sentiment": 0,
+      "product_seller": 0
+    }
+  }
+}

@@ -1,0 +1,39 @@
+country,revenue,order_count,customer_count,return_rate
+United Kingdom,8990682.03,18783,3950,0.0439
+Netherlands,285446.34,95,9,0.0
+EIRE,283140.52,288,3,0.0
+Germany,228678.4,457,95,0.0
+France,209625.37,392,87,0.0
+Australia,138453.81,57,9,0.0
+Spain,61558.56,90,31,0.0
+Switzerland,57067.6,54,21,0.0
+Belgium,41196.34,98,25,0.0
+Sweden,38367.83,36,8,0.0
+Japan,37416.37,19,8,0.0
+Norway,36165.44,36,10,0.0
+Portugal,33683.05,58,19,0.0
+Finland,22546.08,41,12,0.0
+Singapore,21279.29,7,1,0.0
+Channel Islands,20440.54,26,9,0.0
+Denmark,18955.34,18,9,0.0
+Italy,17483.24,38,15,0.0
+Hong Kong,15483.0,11,0,0.0
+Cyprus,13502.85,16,8,0.0
+Austria,10198.68,17,11,0.0
+Israel,8129.41,8,4,0.0
+Poland,7334.65,19,6,0.0
+Greece,4760.52,5,4,0.0
+Unspecified,4740.94,13,4,0.0
+Iceland,4310.0,7,1,0.0
+Canada,3666.38,6,4,0.0
+USA,3580.39,5,4,0.0
+Malta,2725.59,5,2,0.0
+United Arab Emirates,1902.28,3,2,0.0
+Lebanon,1693.88,1,1,0.0
+Lithuania,1661.06,4,1,0.0
+European Community,1300.25,4,1,0.0
+Brazil,1143.6,1,1,0.0
+RSA,1002.31,1,1,0.0
+Czech Republic,826.74,2,1,0.0
+Bahrain,754.14,3,2,0.0
+Saudi Arabia,145.92,1,1,0.0
