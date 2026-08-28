@@ -35,4 +35,3 @@ services:
           type: web
           name: samriddh-backend
           property: host
-          envVarKey: RENDER_EXTERNAL_URL
