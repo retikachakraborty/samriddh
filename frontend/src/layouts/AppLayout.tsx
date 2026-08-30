@@ -360,7 +360,7 @@ export const AppLayout: React.FC = () => {
         </header>
 
         {/* Page Content Outlet */}
-        <main className="flex-1 px-4 sm:px-8 lg:px-12 py-8 max-w-7xl w-full mx-auto space-y-8">
+        <main className="flex-1 px-4 sm:px-6 lg:px-10 py-4 sm:py-6 max-w-7xl w-full mx-auto space-y-6">
           <Outlet />
         </main>
       </div>

@@ -343,9 +343,9 @@ export const SamPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 h-[calc(100vh-140px)] min-h-[600px] pb-4">
+    <div className="flex flex-col lg:flex-row gap-4 lg:gap-5 h-[calc(100vh-6.5rem)] min-h-0 pb-1">
       {/* 1. LEFT PANEL: Suggested Query Bookmarks & Domain Quick-filters */}
-      <aside className="hidden lg:flex flex-col w-72 bg-white rounded-2xl border border-ivory-300 shadow-luxury p-5 shrink-0 space-y-6 overflow-y-auto">
+      <aside className="hidden lg:flex flex-col w-60 xl:w-64 bg-white rounded-2xl border border-ivory-300 shadow-luxury p-4 shrink-0 space-y-4 overflow-y-auto">
         <div>
           <span className="text-[10px] uppercase font-bold tracking-wider text-gold-700 block">
             Intelligence Prompts
@@ -358,13 +358,13 @@ export const SamPage: React.FC = () => {
           </p>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           {suggestedQueries.map((sq, idx) => (
             <button
               key={idx}
               onClick={() => handleSend(sq)}
               disabled={isThinking}
-              className="w-full text-left p-3 rounded-xl bg-ivory-50 hover:bg-gold-50 hover:border-gold-300 text-xs font-medium text-forest-900 border border-ivory-300 transition-all flex items-center justify-between group active:scale-98 disabled:opacity-50"
+              className="w-full text-left p-2.5 rounded-xl bg-ivory-50 hover:bg-gold-50 hover:border-gold-300 text-xs font-medium text-forest-900 border border-ivory-300 transition-all flex items-center justify-between group active:scale-98 disabled:opacity-50"
             >
               <span>{sq}</span>
               <ArrowRight className="w-3.5 h-3.5 text-forest-400 group-hover:text-gold-700 group-hover:translate-x-0.5 transition-all shrink-0" />
@@ -444,7 +444,7 @@ export const SamPage: React.FC = () => {
         </div>
 
         {/* Message History Viewport */}
-        <div className="flex-1 p-5 sm:p-6 overflow-y-auto space-y-6">
+        <div className="flex-1 p-4 sm:p-5 overflow-y-auto space-y-4">
           {messages.map((msg) => {
             const isUser = msg.type === 'user';
             return (
@@ -461,7 +461,7 @@ export const SamPage: React.FC = () => {
                 )}
 
                 <div
-                  className={`max-w-2xl rounded-2xl p-5 ${
+                  className={`max-w-2xl rounded-2xl p-4 sm:p-4.5 ${
                     isUser
                       ? 'bg-forest-900 text-white rounded-br-none shadow-md'
                       : 'bg-ivory-50 text-forest-950 rounded-tl-none border border-ivory-300 shadow-sm'
@@ -540,7 +540,7 @@ export const SamPage: React.FC = () => {
         </div>
 
         {/* Prompt Input Box */}
-        <div className="p-4 sm:p-6 bg-white border-t border-ivory-300">
+        <div className="p-3 sm:p-4 bg-white border-t border-ivory-300">
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -569,7 +569,7 @@ export const SamPage: React.FC = () => {
       </main>
 
       {/* 3. RIGHT PANEL: Live Contextual Intelligence & Executive Signals */}
-      <aside className="hidden xl:flex flex-col w-80 bg-white rounded-2xl border border-ivory-300 shadow-luxury p-5 shrink-0 space-y-5 overflow-y-auto">
+      <aside className="hidden 2xl:flex flex-col w-64 xl:w-72 bg-white rounded-2xl border border-ivory-300 shadow-luxury p-4 shrink-0 space-y-4 overflow-y-auto">
         <div className="border-b border-ivory-200 pb-3">
           <span className="text-[10px] uppercase font-bold tracking-wider text-gold-700 block">
             Live Database Pulse

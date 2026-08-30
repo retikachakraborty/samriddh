@@ -14,23 +14,13 @@ export const LotusEffect: React.FC = () => {
     return () => mediaQuery.removeEventListener('change', handler);
   }, []);
 
-  if (prefersReducedMotion) {
-    return (
-      <div className="fixed inset-0 pointer-events-none overflow-hidden z-0" aria-hidden="true">
-        <div className="absolute top-10 right-10 text-lotus-400/20">
-          <LotusLogo size={120} />
-        </div>
-      </div>
-    );
-  }
-
-  // 5 elegant lotus petals positioned across page margins
+  // 5 elegant lotus petals positioned across visible page margins
   const petals = [
-    { id: 1, left: '5%', top: '12%', size: 42, delay: 0, duration: 16, rotate: 12 },
-    { id: 2, left: '88%', top: '18%', size: 48, delay: 2, duration: 20, rotate: -20 },
-    { id: 3, left: '94%', top: '62%', size: 36, delay: 1, duration: 18, rotate: 35 },
-    { id: 4, left: '3%', top: '78%', size: 44, delay: 3, duration: 22, rotate: -12 },
-    { id: 5, left: '46%', top: '5%', size: 32, delay: 1.5, duration: 17, rotate: 25 },
+    { id: 1, left: '22%', top: '10%', size: 40, delay: 0, duration: 16, rotate: 12 },
+    { id: 2, left: '88%', top: '16%', size: 48, delay: 2, duration: 20, rotate: -20 },
+    { id: 3, left: '92%', top: '64%', size: 36, delay: 1, duration: 18, rotate: 35 },
+    { id: 4, left: '76%', top: '84%', size: 44, delay: 3, duration: 22, rotate: -12 },
+    { id: 5, left: '52%', top: '4%', size: 32, delay: 1.5, duration: 17, rotate: 25 },
   ];
 
   return (
@@ -45,18 +35,26 @@ export const LotusEffect: React.FC = () => {
             width: petal.size,
             height: petal.size,
           }}
-          animate={{
-            y: [0, -20, 10, 0],
-            x: [0, 12, -8, 0],
-            rotate: [petal.rotate, petal.rotate + 15, petal.rotate - 10, petal.rotate],
-            opacity: [0.25, 0.45, 0.3, 0.25],
-          }}
-          transition={{
-            duration: petal.duration,
-            repeat: Infinity,
-            ease: 'easeInOut',
-            delay: petal.delay,
-          }}
+          animate={
+            prefersReducedMotion
+              ? { rotate: petal.rotate, opacity: 0.3 }
+              : {
+                  y: [0, -20, 10, 0],
+                  x: [0, 12, -8, 0],
+                  rotate: [petal.rotate, petal.rotate + 15, petal.rotate - 10, petal.rotate],
+                  opacity: [0.25, 0.45, 0.3, 0.25],
+                }
+          }
+          transition={
+            prefersReducedMotion
+              ? { duration: 0 }
+              : {
+                  duration: petal.duration,
+                  repeat: Infinity,
+                  ease: 'easeInOut',
+                  delay: petal.delay,
+                }
+          }
         >
           <LotusLogo size={petal.size} />
         </motion.div>
