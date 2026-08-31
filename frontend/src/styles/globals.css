@@ -14,6 +14,18 @@
     --navy-gradient-to: #1C2D5A;
   }
 
+  html {
+    font-size: 14.4px; /* 90% scale proportion for standard Windows 125% DPI (1536px) & laptop viewports */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  @media (min-width: 1680px) {
+    html {
+      font-size: 16px; /* Native 100% scale for 1920px+ displays (Ubuntu 100% scale) */
+    }
+  }
+
   body {
     background-color: #FBF9F5;
     color: #0F2E26;

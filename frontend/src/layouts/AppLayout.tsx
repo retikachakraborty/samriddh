@@ -114,7 +114,7 @@ export const AppLayout: React.FC = () => {
       <LotusEffect />
 
       {/* Desktop Luxury Sidebar */}
-      <aside className="hidden md:flex md:w-64 lg:w-72 bg-gradient-to-b from-forest-950 via-forest-900 to-forest-950 text-ivory-100 flex-col sticky top-0 h-screen border-r border-gold-500/20 shadow-2xl z-30 shrink-0">
+      <aside className="hidden md:flex md:w-60 lg:w-64 bg-gradient-to-b from-forest-950 via-forest-900 to-forest-950 text-ivory-100 flex-col sticky top-0 h-screen border-r border-gold-500/20 shadow-2xl z-30 shrink-0">
         {/* Brand Badge */}
         <div className="p-6 border-b border-ivory-300/10">
           <div className="flex items-center gap-3">
@@ -360,7 +360,7 @@ export const AppLayout: React.FC = () => {
         </header>
 
         {/* Page Content Outlet */}
-        <main className="flex-1 px-4 sm:px-6 lg:px-10 py-4 sm:py-6 max-w-7xl w-full mx-auto space-y-6">
+        <main className="flex-1 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 max-w-7xl w-full mx-auto space-y-6">
           <Outlet />
         </main>
       </div>
